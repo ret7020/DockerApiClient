@@ -1,10 +1,12 @@
 #include <curl/curl.h>
 #include <iostream>
 #include <cstring>
+#include "json.hpp"
 #include "docker.h"
 
 
 using namespace std;
+using json = nlohmann::json;
 
 size_t writeFunction(void* ptr, size_t size, size_t nmemb, string* data) {
     // Simple callback for response of curl
@@ -40,4 +42,9 @@ string raw_request(string endpoint, string docker_socket){
         curl = NULL;
     }
     return response_string;
+}
+
+json raw_api(string endpoint, string docker_socket) {
+    string plain_text = raw_request(endpoint, docker_socket);
+    return json::parse(plain_text);
 }

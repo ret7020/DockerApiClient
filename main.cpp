@@ -8,6 +8,7 @@ using namespace std;
 
 int main(){
     //curl -X GET --unix-socket /var/run/docker.sock http://localhost/images/json
-    cout << raw_request("http://localhost/images/json");
+    json data = raw_api("http://localhost/images/json");
+    cout << data[0];
     return 0;
 }
