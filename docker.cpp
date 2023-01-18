@@ -26,7 +26,7 @@ string convert_http_query(string str){
     return str;
 }
 
-string raw_request(string endpoint, string docker_socket){
+string raw_request(string endpoint, int method, string data, string docker_socket){
     //curl -X GET --unix-socket /var/run/docker.sock http://localhost/images/json
     string url = convert_http_query(endpoint);
     cout << url << endl;
@@ -48,7 +48,8 @@ string raw_request(string endpoint, string docker_socket){
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunction);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_string);
         curl_easy_setopt(curl, CURLOPT_HEADERDATA, &header_string);
-
+        if (method == 1) curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
+ 
         curl_easy_perform(curl);
         curl_easy_cleanup(curl);
         curl_global_cleanup();
@@ -58,10 +59,14 @@ string raw_request(string endpoint, string docker_socket){
 }
 
 json raw_api(string endpoint, string docker_socket) {
-    string plain_text = raw_request(endpoint, docker_socket);
+    string plain_text = raw_request(endpoint, 0, "", docker_socket);
     return json::parse(plain_text);
 }
 
 json list_containers(bool all) {
     return raw_api(fmt::v9::format("http://localhost/containers/json?all={}", all));
+}
+
+json run_container(string id) {
+    return raw_api(fmt::v9::format("http://localhost/containers/{}/start", id));
 }
