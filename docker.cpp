@@ -1,5 +1,6 @@
 #include <curl/curl.h>
 #include <iostream>
+#include <fmt/core.h>
 #include <cstring>
 #include "json.hpp"
 #include "docker.h"
@@ -13,10 +14,22 @@ size_t writeFunction(void* ptr, size_t size, size_t nmemb, string* data) {
     data -> append((char*)ptr, size * nmemb);
     return size * nmemb;
 }
+string convert_http_query(string str){
+
+    string::size_type pos = 0;    
+    while ((pos = str.find(' ', pos)) != string::npos)
+    {
+        str.replace(pos, 1, "%20");
+        pos += 3;
+    }
+
+    return str;
+}
 
 string raw_request(string endpoint, string docker_socket){
     //curl -X GET --unix-socket /var/run/docker.sock http://localhost/images/json
-    string url = endpoint;
+    string url = convert_http_query(endpoint);
+    cout << url << endl;
     string response_string;
     curl_global_init(CURL_GLOBAL_DEFAULT);
     auto curl = curl_easy_init();
@@ -47,4 +60,8 @@ string raw_request(string endpoint, string docker_socket){
 json raw_api(string endpoint, string docker_socket) {
     string plain_text = raw_request(endpoint, docker_socket);
     return json::parse(plain_text);
+}
+
+json list_containers(bool all) {
+    return raw_api(fmt::v9::format("http://localhost/containers/json?all={}", all));
 }
