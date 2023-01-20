@@ -27,10 +27,15 @@ string convert_http_query(string str){
 }
 
 string raw_request(string endpoint, int method, string data, string docker_socket){
+    // cout << "RW " << endpoint << " " << method << " " << data << "\n";
     //curl -X GET --unix-socket /var/run/docker.sock http://localhost/images/json
     string url = convert_http_query(endpoint);
     cout << url << endl;
+
     string response_string;
+    string header_string;
+    long http_code = 123;
+
     curl_global_init(CURL_GLOBAL_DEFAULT);
     auto curl = curl_easy_init();
     if (curl) {
@@ -44,13 +49,19 @@ string raw_request(string endpoint, int method, string data, string docker_socke
         
         curl_easy_setopt(curl, CURLOPT_UNIX_SOCKET_PATH, socket_arr);
         curl_easy_setopt(curl, CURLOPT_URL, endpoint_arr);
-        string header_string;
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunction);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_string);
         curl_easy_setopt(curl, CURLOPT_HEADERDATA, &header_string);
-        if (method == 1) curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
+        
+
+        if (method == 1){
+            cout << "POST\n";
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "cont=12");
+        }
  
         curl_easy_perform(curl);
+        auto res = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+        cout << "HTTP code: " << http_code << "\n";
         curl_easy_cleanup(curl);
         curl_global_cleanup();
         curl = NULL;
@@ -58,15 +69,22 @@ string raw_request(string endpoint, int method, string data, string docker_socke
     return response_string;
 }
 
-json raw_api(string endpoint, string docker_socket) {
-    string plain_text = raw_request(endpoint, 0, "", docker_socket);
-    return json::parse(plain_text);
+json raw_api(string endpoint, int method, string data, string docker_socket) {
+    string plain_text = raw_request(endpoint, method, data);
+    json no_data = {
+        {"data", false}
+    };
+
+    if (plain_text.length() == 0)
+        return no_data;
+    else
+        return json::parse(plain_text);
 }
 
 json list_containers(bool all) {
-    return raw_api(fmt::v9::format("http://localhost/containers/json?all={}", all));
+    return raw_api(fmt::v9::format("http://localhost/v1.41/containers/json?all={}", all));
 }
 
 json run_container(string id) {
-    return raw_api(fmt::v9::format("http://localhost/containers/{}/start", id));
+    return raw_api(fmt::v9::format("http://localhost/v1.41/containers/{}/start", id), 1);
 }
