@@ -5,6 +5,9 @@ This is an attempt to create client for docker api library for C++
 - libfmt
 - libcurl
 
+## Build
+To build you have to install g++ compiler on your system, and then run `build.sh` script. Output binary is `client`. We will add support for `make` later
+
 ## API methods
 - [x] List containers
 - [ ] Create container
@@ -15,9 +18,9 @@ This is an attempt to create client for docker api library for C++
 - [ ] Export container
 - [ ] Container status (resources usage)
 - [ ] Resize Container TTY
-- [ ] Start container
-- [ ] Stop container
-- [ ] Restart container
+- [x] Start container
+- [x] Stop container
+- [x] Restart container
 - [ ] Kill container
 - [ ] Update container
 - [ ] Rename container

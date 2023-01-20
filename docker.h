@@ -11,3 +11,5 @@ string raw_request(string endpoint, int method=0, string data="", string docker_
 json raw_api(string endpoint, int method=0, string data="", string docker_socket="/var/run/docker.sock");
 json list_containers(bool all=false);
 json run_container(string id);
+json stop_container(string id, int t=0);
+json restart_container(string id, int t=0);

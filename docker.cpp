@@ -34,7 +34,7 @@ string raw_request(string endpoint, int method, string data, string docker_socke
 
     string response_string;
     string header_string;
-    long http_code = 123;
+    long http_code = 0;
 
     curl_global_init(CURL_GLOBAL_DEFAULT);
     auto curl = curl_easy_init();
@@ -87,4 +87,12 @@ json list_containers(bool all) {
 
 json run_container(string id) {
     return raw_api(fmt::v9::format("http://localhost/v1.41/containers/{}/start", id), 1);
+}
+
+json stop_container(string id, int t) {
+    return raw_api(fmt::v9::format("http://localhost/v1.41/containers/{}/stop?t={}", id, t), 1);
+}
+
+json restart_container(string id, int t) {
+    return raw_api(fmt::v9::format("http://localhost/v1.41/containers/{}/restart?t={}", id, t), 1);
 }
