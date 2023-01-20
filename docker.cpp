@@ -96,3 +96,7 @@ json stop_container(string id, int t) {
 json restart_container(string id, int t) {
     return raw_api(fmt::v9::format("http://localhost/v1.41/containers/{}/restart?t={}", id, t), 1);
 }
+
+json kill_container(string id, string signal) {
+    return raw_api(fmt::v9::format("http://localhost/v1.41/containers/{}/kill?signal={}", id, signal), 1);
+}

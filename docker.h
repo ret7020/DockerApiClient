@@ -13,3 +13,4 @@ json list_containers(bool all=false);
 json run_container(string id);
 json stop_container(string id, int t=0);
 json restart_container(string id, int t=0);
+json kill_container(string id, string signal="SIGKILL");

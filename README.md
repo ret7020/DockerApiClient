@@ -8,7 +8,7 @@ This is an attempt to create client for docker api library for C++
 ## Build
 To build you have to install g++ compiler on your system, and then run `build.sh` script. Output binary is `client`. We will add support for `make` later
 
-## API methods
+## API methods implementation status
 - [x] List containers
 - [ ] Create container
 - [ ] Inspect container
@@ -21,7 +21,7 @@ To build you have to install g++ compiler on your system, and then run `build.sh
 - [x] Start container
 - [x] Stop container
 - [x] Restart container
-- [ ] Kill container
+- [x] Kill container
 - [ ] Update container
 - [ ] Rename container
 - [ ] Pause container
