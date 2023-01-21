@@ -27,11 +27,11 @@ string convert_http_query(string str){
 }
 
 string raw_request(string endpoint, int method, string data, string docker_socket){
+    // Example curl cli command
     // cout << "RW " << endpoint << " " << method << " " << data << "\n";
     //curl -X GET --unix-socket /var/run/docker.sock http://localhost/images/json
     string url = convert_http_query(endpoint);
     cout << url << endl;
-
     string response_string;
     string header_string;
     long http_code = 0;
@@ -56,7 +56,11 @@ string raw_request(string endpoint, int method, string data, string docker_socke
 
         if (method == 1){
             cout << "POST\n";
-            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "cont=12");
+            struct curl_slist *hs = NULL;
+            hs = curl_slist_append(hs, "Content-Type: application/json");
+            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, hs);
+            cout << data << "\n";
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
         }
  
         curl_easy_perform(curl);
@@ -99,4 +103,19 @@ json restart_container(string id, int t) {
 
 json kill_container(string id, string signal) {
     return raw_api(fmt::v9::format("http://localhost/v1.41/containers/{}/kill?signal={}", id, signal), 1);
+}
+
+json exec_in_container(string id, string bash_command, bool AttachStdin, bool AttachStdout, bool AttachStderr, bool tty, string working_dir){
+    string endpoint = fmt::v9::format("http://localhost/v1.41/containers/{}/exec", id);
+    //string payload = fmt::v9::format("AttachStdin={}&AttachStdout={}&AttachStderr={}&tty={}&cmd=['{}']", AttachStdin, AttachStdout, AttachStderr, tty, bash_command);
+    //cout << payload;
+    json payload = {
+        {"AttachStdin", AttachStdin},
+        {"AttachStdout", AttachStdout},
+        {"AttachStderr", AttachStderr},
+        {"tty", tty},
+        {"cmd", {bash_command}},
+    };
+    string payload_string = payload.dump();
+    return raw_api(endpoint, 1, payload_string);
 }

@@ -14,3 +14,5 @@ json run_container(string id);
 json stop_container(string id, int t=0);
 json restart_container(string id, int t=0);
 json kill_container(string id, string signal="SIGKILL");
+json attach_container(string id);
+json exec_in_container(string id, string bash_command, bool AttachStdin=true, bool AttachStdout=true, bool AttachStderr=true, bool tty=false, string working_dir="/");

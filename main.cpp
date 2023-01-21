@@ -17,8 +17,13 @@ int main(){
     // stop_container("7acca23a34e", 10);
     // restart_container("7acca23a34e", 10);
 
-    /*run_container("7acca23a34e1");
-    this_thread::sleep_for(std::chrono::milliseconds(5000));
-    kill_container("7acca23a34e");*/
+    // run_container("7acca23a34e1");
+    // this_thread::sleep_for(std::chrono::milliseconds(5000));
+    // kill_container("7acca23a34e");
+
+    /* Exec test */
+    // run_container("7acca23a34e");
+    // cout << exec_in_container("7acca23a34e", "ping ya.ru");
+
     return 0;
 }

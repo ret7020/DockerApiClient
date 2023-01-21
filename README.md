@@ -1,5 +1,6 @@
 # Docker API Client 
-This is an attempt to create client for docker api library for C++
+This is an attempt to create client for docker api library for C++ This library implements Docker REST API version `1.41`. </br>
+You can read official docker REST API [here](https://docs.docker.com/engine/api/v1.41/#tag/Exec/operation/ContainerExec).
 
 ## Dependencies
 - libfmt
@@ -27,3 +28,4 @@ To build you have to install g++ compiler on your system, and then run `build.sh
 - [ ] Pause container
 - [ ] Unpause container
 - [ ] Attach to container
+- [ ] Exec
