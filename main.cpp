@@ -3,17 +3,17 @@
 #include <cstring>
 #include "docker.h"
 
-// For tests
-// #include <chrono>
-// #include <thread>
-
 
 using namespace std;
 
 
 int main(){
+    // Example curl to docker api unix socket
     //curl -X GET --unix-socket /var/run/docker.sock http://localhost/images/json
+    //
+    // Methods from libs
     //cout << list_containers(true);
+    
     // stop_container("7acca23a34e", 10);
     // restart_container("7acca23a34e", 10);
 
@@ -21,7 +21,6 @@ int main(){
     // this_thread::sleep_for(std::chrono::milliseconds(5000));
     // kill_container("7acca23a34e");
 
-    /* Exec test */
     // run_container("7acca23a34e");
     // cout << exec_in_container("7acca23a34e", "ping ya.ru");
 
