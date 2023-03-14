@@ -23,6 +23,6 @@ int main(){
 
     // run_container("7acca23a34e");
     // cout << exec_in_container("7acca23a34e", "ping ya.ru");
-
+    API DockerApiClient("http://localhost/v1.41", "/var/run/docker.sock");
     return 0;
 }

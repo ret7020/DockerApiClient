@@ -89,7 +89,7 @@ json list_containers(bool all, string host="http://localhost/v1.41/") {
     return raw_api(fmt::v9::format("{}/containers/json?all={}", host, all));
 }
 
-json run_container(string id, string host="http://localhost/v1.41/")) {
+json run_container(string id, string host="http://localhost/v1.41/") {
     return raw_api(fmt::v9::format("http://localhost/v1.41/containers/{}/start", id), 1);
 }
 
@@ -119,3 +119,11 @@ json exec_in_container(string id, string bash_command, bool AttachStdin, bool At
     string payload_string = payload.dump();
     return raw_api(endpoint, 1, payload_string);
 }
+
+/*class API {
+    public: 
+        string Host, UnixSocket;
+        API(string Host="http://localhost/v1.41", string UnixSocket="/var/run/docker.sock"){
+            cout << "Class constructor";
+        }
+};*/
