@@ -55,17 +55,17 @@ string raw_request(string endpoint, int method, string data, string docker_socke
         
 
         if (method == 1){
-            cout << "POST\n";
+            //cout << "POST\n";
             struct curl_slist *hs = NULL;
             hs = curl_slist_append(hs, "Content-Type: application/json");
             curl_easy_setopt(curl, CURLOPT_HTTPHEADER, hs);
-            cout << data << "\n";
+            //cout << data << "\n";
             curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
         }
  
         curl_easy_perform(curl);
         auto res = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-        cout << "HTTP code: " << http_code << "\n";
+        //cout << "HTTP code: " << http_code << "\n";
         curl_easy_cleanup(curl);
         curl_global_cleanup();
         curl = NULL;

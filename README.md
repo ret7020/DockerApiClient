@@ -7,7 +7,7 @@ You can read official docker REST API [here](https://docs.docker.com/engine/api/
 - libcurl
 
 ## Build
-To build you have to install g++ compiler on your system, and then run `build.sh` script. Output binary is `client`. We will add support for `make` later
+To build you have to install g++ compiler on your system, and then run `build.sh` script. Output binary is `client`. We will add support for `cmake` later or never.
 
 ## API methods implementation status
 - [x] List containers
