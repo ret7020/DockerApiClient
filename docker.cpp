@@ -55,7 +55,7 @@ string raw_request(string endpoint, int method, string data, string docker_socke
         
 
         if (method == 1){
-            //cout << "POST\n";
+            // cout << "POST\n";
             struct curl_slist *hs = NULL;
             hs = curl_slist_append(hs, "Content-Type: application/json");
             curl_easy_setopt(curl, CURLOPT_HTTPHEADER, hs);
@@ -75,6 +75,7 @@ string raw_request(string endpoint, int method, string data, string docker_socke
 
 json raw_api(string endpoint, int method, string data, string docker_socket) {
     string plain_text = raw_request(endpoint, method, data);
+    cout << "\n\n" << plain_text << "\n\n";
     json no_data = {
         {"data", false}
     };
@@ -89,7 +90,7 @@ json list_containers(bool all, string host) {
     return raw_api(fmt::v9::format("{}/containers/json?all={}", host, all));
 }
 
-json run_container(string id, string host) {
+json start_container(string id, string host) {
     return raw_api(fmt::v9::format("{}/containers/{}/start", host, id), 1);
 }
 
@@ -106,9 +107,8 @@ json kill_container(string id, string signal, string host) {
 }
 
 json exec_in_container(string id, string bash_command, bool AttachStdin, bool AttachStdout, bool AttachStderr, bool tty, string working_dir, string host){
+    // Creating exec instance
     string endpoint = fmt::v9::format("{}/containers/{}/exec", host, id);
-    //string payload = fmt::v9::format("AttachStdin={}&AttachStdout={}&AttachStderr={}&tty={}&cmd=['{}']", AttachStdin, AttachStdout, AttachStderr, tty, bash_command);
-    //cout << payload;
     json payload = {
         {"AttachStdin", AttachStdin},
         {"AttachStdout", AttachStdout},
@@ -117,7 +117,16 @@ json exec_in_container(string id, string bash_command, bool AttachStdin, bool At
         {"cmd", {bash_command}},
     };
     string payload_string = payload.dump();
-    return raw_api(endpoint, 1, payload_string);
+    //cout << payload_string;
+    json res = raw_api(endpoint, 1, payload_string);
+    //cout << res["Id"];
+    // Start exec instance
+    payload = {
+        {"Detach", true},
+        {"Tty", true}
+    };
+    payload_string = payload.dump();
+    return raw_api(fmt::v9::format("{}/exec/{}/start", host, res["Id"]), 1, payload_string);
 }
 
 /*class API {
