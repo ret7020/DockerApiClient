@@ -85,28 +85,28 @@ json raw_api(string endpoint, int method, string data, string docker_socket) {
         return json::parse(plain_text);
 }
 
-json list_containers(bool all, string host="http://localhost/v1.41/") {
+json list_containers(bool all, string host) {
     return raw_api(fmt::v9::format("{}/containers/json?all={}", host, all));
 }
 
-json run_container(string id, string host="http://localhost/v1.41/") {
-    return raw_api(fmt::v9::format("http://localhost/v1.41/containers/{}/start", id), 1);
+json run_container(string id, string host) {
+    return raw_api(fmt::v9::format("{}/containers/{}/start", host, id), 1);
 }
 
-json stop_container(string id, int t, string host="http://localhost/v1.41/") {
-    return raw_api(fmt::v9::format("http://localhost/v1.41/containers/{}/stop?t={}", id, t), 1);
+json stop_container(string id, int t, string host) {
+    return raw_api(fmt::v9::format("{}/containers/{}/stop?t={}", host, id, t), 1);
 }
 
-json restart_container(string id, int t, string host="http://localhost/v1.41/") {
-    return raw_api(fmt::v9::format("http://localhost/v1.41/containers/{}/restart?t={}", id, t), 1);
+json restart_container(string id, int t, string host) {
+    return raw_api(fmt::v9::format("{}/containers/{}/restart?t={}", host, id, t), 1);
 }
 
-json kill_container(string id, string signal, string host="http://localhost/v1.41/") {
-    return raw_api(fmt::v9::format("http://localhost/v1.41/containers/{}/kill?signal={}", id, signal), 1);
+json kill_container(string id, string signal, string host) {
+    return raw_api(fmt::v9::format("{}/containers/{}/kill?signal={}", host, id, signal), 1);
 }
 
-json exec_in_container(string id, string bash_command, bool AttachStdin, bool AttachStdout, bool AttachStderr, bool tty, string working_dir){
-    string endpoint = fmt::v9::format("http://localhost/v1.41/containers/{}/exec", id);
+json exec_in_container(string id, string bash_command, bool AttachStdin, bool AttachStdout, bool AttachStderr, bool tty, string working_dir, string host){
+    string endpoint = fmt::v9::format("{}/containers/{}/exec", host, id);
     //string payload = fmt::v9::format("AttachStdin={}&AttachStdout={}&AttachStderr={}&tty={}&cmd=['{}']", AttachStdin, AttachStdout, AttachStderr, tty, bash_command);
     //cout << payload;
     json payload = {
