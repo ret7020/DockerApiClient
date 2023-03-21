@@ -18,13 +18,14 @@ int main(){
     // stop_container("7acca23a34e", 10);
     // restart_container("7acca23a34e", 10);
 
-    start_container(container);
+    //start_container(container);
     // this_thread::sleep_for(std::chrono::milliseconds(5000));
 
-    cout << exec_in_container(container, "touch /test.txt");
+    cout << exec_in_container(container, "echo 'Hello' > /home/res.txt");
 
     //kill_container(container);
 
     //API DockerApiClient("http://localhost/v1.41", "/var/run/docker.sock");
     return 0;
 }
+

@@ -113,11 +113,13 @@ json exec_in_container(string id, string bash_command, bool AttachStdin, bool At
         {"AttachStdin", AttachStdin},
         {"AttachStdout", AttachStdout},
         {"AttachStderr", AttachStderr},
-        {"tty", tty},
-        {"cmd", {bash_command}},
+        {"Tty", tty},
+        {"Cmd", {"bash", "-c", bash_command}},
+        {"WorkingDir", working_dir}
+
     };
     string payload_string = payload.dump();
-    //cout << payload_string;
+    cout << payload_string << "\n";
     json res = raw_api(endpoint, 1, payload_string);
     //cout << res["Id"];
     // Start exec instance

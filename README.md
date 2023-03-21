@@ -28,5 +28,5 @@ To build you have to install g++ compiler on your system, and then run `build.sh
 - [ ] Pause container
 - [ ] Unpause container
 - [ ] Attach to container
-- [ ] Exec
+- [x] Exec
 - [ ] Log
