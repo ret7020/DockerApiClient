@@ -10,12 +10,12 @@ using namespace std;
 using json = nlohmann::json;
 
 size_t writeFunction(void* ptr, size_t size, size_t nmemb, string* data) {
-    // Simple callback for response of curl
+    /* Simple callback for response of curl */
     data -> append((char*)ptr, size * nmemb);
     return size * nmemb;
 }
 string convert_http_query(string str){
-
+    // Process http query to use it with curl
     string::size_type pos = 0;    
     while ((pos = str.find(' ', pos)) != string::npos)
     {
@@ -27,9 +27,15 @@ string convert_http_query(string str){
 }
 
 string raw_request(string endpoint, int method, string data, string docker_socket){
+    /* Raw request to docker endpoint
+        Choose docker socket
+        Choose http host
+        Choose http request type (GET, POST)
+    */
+
     // Example curl cli command
+    // curl -X GET --unix-socket /var/run/docker.sock http://localhost/images/json
     // cout << "RW " << endpoint << " " << method << " " << data << "\n";
-    //curl -X GET --unix-socket /var/run/docker.sock http://localhost/images/json
     string url = convert_http_query(endpoint);
     cout << url << endl;
     string response_string;
@@ -114,14 +120,13 @@ json exec_in_container(string id, string bash_command, bool AttachStdin, bool At
         {"AttachStdout", AttachStdout},
         {"AttachStderr", AttachStderr},
         {"Tty", tty},
-        {"Cmd", {"bash", "-c", bash_command}},
+        {"Cmd", {"bash", "-c", bash_command}}, // final command: bash -c COMMAND HERE
         {"WorkingDir", working_dir}
 
     };
     string payload_string = payload.dump();
     cout << payload_string << "\n";
     json res = raw_api(endpoint, 1, payload_string);
-    //cout << res["Id"];
     // Start exec instance
     payload = {
         {"Detach", true},
