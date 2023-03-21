@@ -3,8 +3,18 @@
 #include <cstring>
 #include "docker.h"
 
-
 using namespace std;
+
+// Single task checking pipeline (beta)
+// Compile c++ program
+// Start Docker Container
+// Copy bin or python source to container
+// Start timer (get current unix time)
+// Start binary/script and pass stdin inside process
+// Wait until process finished or timer get over than max excution time
+// Get stdout and compare it with test
+// Repeat this for each test
+// After all tests finished, kill container
 
 
 int main(){
@@ -21,7 +31,7 @@ int main(){
     //start_container(container);
     // this_thread::sleep_for(std::chrono::milliseconds(5000));
 
-    cout << exec_in_container(container, "echo 'Hello' > /home/res.txt");
+    cout << exec_in_container(container, "echo 'Hello, world!' > /proc/1/fd/1");
 
     //kill_container(container);
 
