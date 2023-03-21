@@ -19,6 +19,8 @@ using namespace std;
 int main()
 {
     string container = "11aa6f74b938";
+    // cout << inspect_container(container)["State"];
+    cout << processes_in_container(container, "aux");
     // Example curl to docker api unix socket
     // curl -X GET --unix-socket /var/run/docker.sock http://localhost/images/json
     //
@@ -31,7 +33,7 @@ int main()
     // start_container(container);
     //  this_thread::sleep_for(std::chrono::milliseconds(5000));
 
-    cout << exec_in_container(container, "echo 'Hello, world!' > /proc/1/fd/1");
+    //cout << exec_in_container(container, "echo 'Hello, world!' > /proc/1/fd/1");
 
     // kill_container(container);
 

@@ -1,6 +1,6 @@
 # Docker API Client 
-This is an attempt to create client for docker api library for C++ This library implements Docker REST API version `1.41`. </br>
-You can read official docker REST API [here](https://docs.docker.com/engine/api/v1.41/#tag/Exec/operation/ContainerExec).
+This is an attempt to create client for docker api library for C++. This library implements Docker REST API version `1.41`. </br>
+You can read official docker REST API docs [here](https://docs.docker.com/engine/api/v1.41/#tag/Exec/operation/ContainerExec).
 
 ## Dependencies
 - libfmt
@@ -17,8 +17,8 @@ make
 ## API methods implementation status
 - [x] List containers
 - [ ] Create container
-- [ ] Inspect container
-- [ ] List processes inside container
+- [x] Inspect container
+- [x] List processes inside container
 - [ ] Container logs
 - [ ] Container FS changes
 - [ ] Export container
@@ -34,4 +34,3 @@ make
 - [ ] Unpause container
 - [ ] Attach to container
 - [x] Exec
-- [ ] Log

@@ -13,6 +13,9 @@ string raw_request(string endpoint, int method=0, string data="", string docker_
 json raw_api(string endpoint, int method=0, string data="", string docker_socket="/var/run/docker.sock");
 
 json list_containers(bool all=false, string host="http://localhost/v1.41");
+json inspect_container(string id, string host="http://localhost/v1.41");
+json processes_in_container(string id, string ps_args="-ef", string host="http://localhost/v1.41");
+
 json start_container(string id, string host="http://localhost/v1.41");
 json stop_container(string id, int t=0, string host="http://localhost/v1.41");
 json restart_container(string id, int t=0, string host="http://localhost/v1.41");
