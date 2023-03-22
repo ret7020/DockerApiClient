@@ -85,6 +85,7 @@ string raw_request(string endpoint, int method, string data, string docker_socke
 json raw_api(string endpoint, int method, string data, string docker_socket)
 {
     string plain_text = raw_request(endpoint, method, data);
+    //cout << "\n" << plain_text << "\n";
     json no_data = {
         {"data", false}};
 
@@ -127,19 +128,22 @@ json kill_container(string id, string signal, string host)
     return raw_api(fmt::v9::format("{}/containers/{}/kill?signal={}", host, id, signal), 1);
 }
 
-json exec_in_container(string id, string bash_command, bool AttachStdin, bool AttachStdout, bool AttachStderr, bool tty, string working_dir, string host)
+json exec_in_container(string id, string bash_command, bool bash, bool AttachStdin, bool AttachStdout, bool AttachStderr, bool tty, string working_dir, string host)
 {
     // Creating exec instance
     string endpoint = fmt::v9::format("{}/containers/{}/exec", host, id);
+    
     json payload = {
         {"AttachStdin", AttachStdin},
         {"AttachStdout", AttachStdout},
         {"AttachStderr", AttachStderr},
         {"Tty", tty},
-        {"Cmd", {"bash", "-c", bash_command}}, // final command: bash -c COMMAND HERE
         {"WorkingDir", working_dir}
-
     };
+    // To execute bash command in docker, you need to use smth, like bash -c COMMAND HERE
+    // To execute binary in docker, you need to use smth, like /path/to/bin
+    if (bash) payload["Cmd"] = {"bash", "-c", bash_command};
+    else payload["Cmd"] = {bash_command};
     string payload_string = payload.dump();
     cout << payload_string << "\n";
     json res = raw_api(endpoint, 1, payload_string);

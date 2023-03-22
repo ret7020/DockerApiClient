@@ -33,4 +33,5 @@ make
 - [ ] Pause container
 - [ ] Unpause container
 - [ ] Attach to container
-- [x] Exec
+- [x] Exec bash in container
+- [ ] Wait for a container
