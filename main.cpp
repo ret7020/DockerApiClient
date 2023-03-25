@@ -3,7 +3,9 @@
 #include <cstring>
 #include "docker.h"
 #include <fmt/core.h>
+#include "subprocess.hpp"
 
+using namespace subprocess;
 using namespace std;
 
 // Single task checking pipeline (beta)
@@ -64,9 +66,10 @@ string shtp_python_cli_run(string submission_id){
     string bash = fmt::v9::format("docker run --network none -itd -v {}/{}:{} {} {}", workspace_absolute_path, submission_id, mount_to, container, entrypoint);
     // Example command
     //docker run --network none -itd -v /home/stephan/Progs/DockerAPI/build/workspace/tmp:/home/code python:latest bash
-    return exec(bash.c_str());
-    
+    return exec(bash.c_str());   
 }
+
+// string shtp_python_exec(string)
 
 int main()
 {
@@ -100,9 +103,15 @@ int main()
     cleanup_workspace(demo_submission);
     init_workspace(demo_submission);
     // For test; gain source code into submission workspace
-    copy_demo_submission_source(demo_submission);
+    //copy_demo_submission_source(demo_submission);
     // Run docker container
-    string submission_container = shtp_python_cli_run(demo_submission);
+    //string submission_container = shtp_python_cli_run(demo_submission);
+    string submission_container = "29ecd4fb47c21688ef5fa96ab2e825602d3a7c5b32e09b7961752a82389fa8c7";
+    auto p = Popen({"docker", "attach", submission_container}, output{PIPE}, input{PIPE});
+    auto msg = "python3 /home/code/main.py\r";
+    p.send(msg, strlen(msg));
+    auto res = p.communicate();
+    std::cout << res.first.buf.data() << std::endl;
     
     // kill_container(submission_container);
     // cleanup_workspace(demo_submission);
