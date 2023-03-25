@@ -5,6 +5,7 @@ You can read official docker REST API docs [here](https://docs.docker.com/engine
 ## Dependencies
 - libfmt
 - libcurl
+- libtar
 
 ## Build
 Use cmake:

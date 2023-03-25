@@ -4,6 +4,7 @@ project(docker_api)
 
 find_package(CURL REQUIRED)
 find_package(fmt REQUIRED)
+#find_package(tar REQUIRED)
 
 set(SOURCE_EXE main.cpp)
 set(SOURCE_LIB docker.cpp)

@@ -5,6 +5,7 @@
 #include "json.hpp"
 #include "docker.h"
 
+
 using namespace std;
 using json = nlohmann::json;
 
@@ -62,7 +63,7 @@ string raw_request(string endpoint, int method, string data, string docker_socke
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_string);
         curl_easy_setopt(curl, CURLOPT_HEADERDATA, &header_string);
 
-        if (method == 1)
+        if (method == 1) // POST
         {
             // cout << "POST\n";
             struct curl_slist *hs = NULL;
@@ -70,6 +71,9 @@ string raw_request(string endpoint, int method, string data, string docker_socke
             curl_easy_setopt(curl, CURLOPT_HTTPHEADER, hs);
             // cout << data << "\n";
             curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
+        }else if (method == 2) // PUT
+        {
+            
         }
 
         curl_easy_perform(curl);
@@ -158,19 +162,23 @@ json exec_in_container(string id, string bash_command, bool bash, bool AttachStd
 json create_container(string image, int StopTimeout, int MemoryLimit, string bash_init_cmd, string WorkingDir, bool AttachStdin, bool AttachStdout, bool AttachStderr, bool NetworkDisabled, string host){
     json payload = {
         {"Image", image},
-        {"Entrypoint", "bash -c"},
-        {"Cmd", {"top", "-b"}},
+        // {"Entrypoint", {"/bin/bash", },
+        {"Cmd", {"echo", "Hello, world!"}},
         //{"StopTimeout", StopTimeout},
         {"HostConfig", {{"Memory", MemoryLimit}}},
         {"NetworkDisabled", NetworkDisabled},
-        {"WorkingDir", WorkingDir},
-        {"AttachStdin", AttachStdin},
-        {"AttachStdout", AttachStdout},
-        {"AttachStderr", AttachStderr}
+        // {"WorkingDir", WorkingDir},
+        // {"AttachStdin", AttachStdin},
+        // {"AttachStdout", AttachStdout},
+        // {"AttachStderr", AttachStderr}
     };
     string payload_string = payload.dump();
     cout << "\n" << payload_string << "\n";
     return raw_api(fmt::v9::format("{}/containers/create", host), 1, payload_string);
+}
+
+json put_archive(string id, string host){
+
 }
 
 /*class API {

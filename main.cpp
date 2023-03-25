@@ -16,6 +16,25 @@ using namespace std;
 // Repeat this for each test
 // After all tests finished, kill container
 
+// Function for ShTP Checker
+// TODO Move to ITClassDev/Checker
+void init_workspace(string submission_id){
+    // Create folder in ./workspace with name = submission_id
+    string bash = "mkdir ./workspace/" + submission_id;
+    system(bash.c_str());
+}
+
+void cleanup_workspace(string submission_id){
+    string bash = "rm -r ./workspace/" + submission_id;
+    system(bash.c_str());
+}
+
+// Utility test function
+// In fact we will get source code files via socket or from backend directly uploaded to ./workspace dir
+void copy_demo_submission_source(string submission_id){
+    string bash = "cpp -r ./demo_source/* ./workspace/" + submission_id;
+    system(bash.c_str());
+}
 
 int main()
 {
@@ -42,7 +61,12 @@ int main()
     // API DockerApiClient("http://localhost/v1.41", "/var/run/docker.sock");
 
     // Our checker pipeline (refer to github.com/ItClassDev/Checker)
-    cout << create_container(image, 500);
-
+    //cout << create_container(image, 500);
+    const string demo_submission = "666";
+    init_workspace(demo_submission);
+    // For test; gain source code into submission workspace
+    copy_demo_submission_source(demo_submission);
+    
+    cleanup_workspace(demo_submission);
     return 0;
 }
