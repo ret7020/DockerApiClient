@@ -159,15 +159,17 @@ json exec_in_container(string id, string bash_command, bool bash, bool AttachStd
     return raw_api(fmt::v9::format("{}/exec/{}/start", host, res["Id"]), 1, payload_string);
 }
 
-json create_container(string image, int StopTimeout, int MemoryLimit, string bash_init_cmd, string WorkingDir, bool AttachStdin, bool AttachStdout, bool AttachStderr, bool NetworkDisabled, string host){
+json create_container(string image, int StopTimeout, json volumes, int MemoryLimit, string bash_init_cmd, string WorkingDir, bool AttachStdin, bool AttachStdout, bool AttachStderr, bool NetworkDisabled, string host){
     json payload = {
         {"Image", image},
         // {"Entrypoint", {"/bin/bash", },
-        {"Cmd", {"echo", "Hello, world!"}},
+        {"Cmd", {"ls", "/home/code"}},
+        // {"Volumes", {{"/home/code", {"/home/stephan/Progs/DockerAPI/build/wokspace/tmp"}}}},
         //{"StopTimeout", StopTimeout},
-        {"HostConfig", {{"Memory", MemoryLimit}}},
+        {"HostConfig", {{"Memory", MemoryLimit}, {"Mounts", {{{"Target", "/home/code"}, {"Source", "workspace/tmp"}, {"Type", "volume"}, {"ReadOnly", false}}}}}},
         {"NetworkDisabled", NetworkDisabled},
-        // {"WorkingDir", WorkingDir},
+        {"WorkingDir", WorkingDir},
+
         // {"AttachStdin", AttachStdin},
         // {"AttachStdout", AttachStdout},
         // {"AttachStderr", AttachStderr}
@@ -177,9 +179,9 @@ json create_container(string image, int StopTimeout, int MemoryLimit, string bas
     return raw_api(fmt::v9::format("{}/containers/create", host), 1, payload_string);
 }
 
-json put_archive(string id, string host){
 
-}
+// json put_archive(string id, string host){
+// }
 
 /*class API {
     public:

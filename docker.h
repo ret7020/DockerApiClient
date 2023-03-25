@@ -15,7 +15,7 @@ json raw_api(string endpoint, int method=0, string data="", string docker_socket
 json list_containers(bool all=false, string host="http://localhost/v1.41");
 json inspect_container(string id, string host="http://localhost/v1.41");
 json processes_in_container(string id, string ps_args="-ef", string host="http://localhost/v1.41");
-json create_container(string image, int StopTimeout, int MemoryLimit=0, string bash_init_cmd="bash -i", string WorkingDir="/", bool AttachStdin=false, bool AttachStdout=true, bool AttachStderr=true, bool NetworkDisabled=true, string host="http://localhost/v1.41");
+json create_container(string image, int StopTimeout, json volumes = {{}}, int MemoryLimit=0, string bash_init_cmd="bash -i", string WorkingDir="/", bool AttachStdin=false, bool AttachStdout=true, bool AttachStderr=true, bool NetworkDisabled=true, string host="http://localhost/v1.41");
 
 json start_container(string id, string host="http://localhost/v1.41");
 json stop_container(string id, int t=0, string host="http://localhost/v1.41");

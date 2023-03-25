@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstring>
 #include "docker.h"
+#include <fmt/core.h>
 
 using namespace std;
 
@@ -20,26 +21,59 @@ using namespace std;
 // TODO Move to ITClassDev/Checker
 void init_workspace(string submission_id){
     // Create folder in ./workspace with name = submission_id
-    string bash = "mkdir ./workspace/" + submission_id;
+    string bash = "mkdir ./workspace/" + submission_id + " 2> /dev/null";
     system(bash.c_str());
 }
 
 void cleanup_workspace(string submission_id){
-    string bash = "rm -r ./workspace/" + submission_id;
+    string bash = "rm -r ./workspace/" + submission_id + " 2> /dev/null";
     system(bash.c_str());
 }
 
 // Utility test function
 // In fact we will get source code files via socket or from backend directly uploaded to ./workspace dir
 void copy_demo_submission_source(string submission_id){
-    string bash = "cpp -r ./demo_source/* ./workspace/" + submission_id;
+    string bash = "cp -r ./demo_source/* ./workspace/" + submission_id + " 2> /dev/null";
     system(bash.c_str());
+}
+
+std::string exec(const char* cmd) {
+    char buffer[128];
+    std::string result = "";
+    FILE* pipe = popen(cmd, "r");
+    if (!pipe) throw std::runtime_error("popen() failed!");
+    try {
+        while (fgets(buffer, sizeof buffer, pipe) != NULL) {
+            result += buffer;
+        }
+    } catch (...) {
+        pclose(pipe);
+        throw;
+    }
+    pclose(pipe);
+    return result;
+}
+
+
+// Ok, I loose, shit docker engine api
+string shtp_python_cli_run(string submission_id){
+    string workspace_absolute_path = "/home/stephan/Progs/DockerAPI/build/workspace";
+    string mount_to = "/home/code";
+    string container = "python:latest";
+    string entrypoint = "bash";
+    string bash = fmt::v9::format("docker run --network none -itd -v {}/{}:{} {} {}", workspace_absolute_path, submission_id, mount_to, container, entrypoint);
+    // Example command
+    //docker run --network none -itd -v /home/stephan/Progs/DockerAPI/build/workspace/tmp:/home/code python:latest bash
+    return exec(bash.c_str());
+    
 }
 
 int main()
 {
     string container = "4c45d07e9038";
     string image = "python:latest";
+
+    // API test
     // cout << inspect_container(container)["State"];
     // cout << processes_in_container(container, "aux");
     // Example curl to docker api unix socket
@@ -61,12 +95,18 @@ int main()
     // API DockerApiClient("http://localhost/v1.41", "/var/run/docker.sock");
 
     // Our checker pipeline (refer to github.com/ItClassDev/Checker)
-    //cout << create_container(image, 500);
     const string demo_submission = "666";
+
+    cleanup_workspace(demo_submission);
     init_workspace(demo_submission);
     // For test; gain source code into submission workspace
     copy_demo_submission_source(demo_submission);
+    // Run docker container
+    string submission_container = shtp_python_cli_run(demo_submission);
     
-    cleanup_workspace(demo_submission);
+    // kill_container(submission_container);
+    // cleanup_workspace(demo_submission);
+
+    // Pipeline finish
     return 0;
 }
