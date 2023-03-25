@@ -16,9 +16,11 @@ using namespace std;
 // Repeat this for each test
 // After all tests finished, kill container
 
+
 int main()
 {
-    string container = "11aa6f74b938";
+    string container = "4c45d07e9038";
+    string image = "python:latest";
     // cout << inspect_container(container)["State"];
     // cout << processes_in_container(container, "aux");
     // Example curl to docker api unix socket
@@ -30,13 +32,17 @@ int main()
     // stop_container("7acca23a34e", 10);
     // restart_container("7acca23a34e", 10);
 
-    start_container(container);
+    //start_container(container);
     //  this_thread::sleep_for(std::chrono::milliseconds(5000));
 
-    cout << exec_in_container(container, "/home/a", false); 
+    //cout << exec_in_container(container, "/home/a", false); 
 
     // kill_container(container);
 
     // API DockerApiClient("http://localhost/v1.41", "/var/run/docker.sock");
+
+    // Our checker pipeline (refer to github.com/ItClassDev/Checker)
+    cout << create_container(image, 500);
+
     return 0;
 }

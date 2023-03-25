@@ -155,6 +155,24 @@ json exec_in_container(string id, string bash_command, bool bash, bool AttachStd
     return raw_api(fmt::v9::format("{}/exec/{}/start", host, res["Id"]), 1, payload_string);
 }
 
+json create_container(string image, int StopTimeout, int MemoryLimit, string bash_init_cmd, string WorkingDir, bool AttachStdin, bool AttachStdout, bool AttachStderr, bool NetworkDisabled, string host){
+    json payload = {
+        {"Image", image},
+        {"Entrypoint", "bash -c"},
+        {"Cmd", {"top", "-b"}},
+        //{"StopTimeout", StopTimeout},
+        {"HostConfig", {{"Memory", MemoryLimit}}},
+        {"NetworkDisabled", NetworkDisabled},
+        {"WorkingDir", WorkingDir},
+        {"AttachStdin", AttachStdin},
+        {"AttachStdout", AttachStdout},
+        {"AttachStderr", AttachStderr}
+    };
+    string payload_string = payload.dump();
+    cout << "\n" << payload_string << "\n";
+    return raw_api(fmt::v9::format("{}/containers/create", host), 1, payload_string);
+}
+
 /*class API {
     public:
         string Host, UnixSocket;
