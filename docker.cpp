@@ -78,9 +78,10 @@ string raw_request(string endpoint, int method, string data, string docker_socke
     return response_string;
 }
 
-json raw_api(string endpoint, int method, string data, string docker_socket)
+json raw_api(string endpoint, int method, string data, bool plain, string docker_socket)
 {
     string plain_text = raw_request(endpoint, method, data);
+    if (plain) return {{"data", plain_text}};
     // cout << "\n" << plain_text << "\n";
     json no_data = {
         {"data", false}};
@@ -196,12 +197,13 @@ websocket::stream<tcp::socket> attach_to_container_ws(string id, bool stream, bo
     return ws;
 }
 
-json get_container_logs(string id, bool stream_stdout, bool stream_stderr, string host){
-    return raw_api(fmt::v9::format("{}/containers/{}/logs?stdout={}&stderr={}", host, id, stream_stdout, stream_stderr));
+string get_container_logs(string id, bool stream_stdout, bool stream_stderr, string host){
+    return raw_api(fmt::v9::format("{}/containers/{}/logs?stdout={}&stderr={}", host, id, stream_stdout, stream_stderr), 0, "", true)["data"];
 }
 json wait_for_container(string id, string host){
     // Yeah, we will stack here
-    return raw_api(fmt::v9::format("{}/containers/{}/wait", host, id), 1, "");
+    json res = raw_api(fmt::v9::format("{}/containers/{}/wait", host, id), 1, "");
+    return res;
 }
 json remove_container(string id, string host){
     return raw_api(fmt::v9::format("{}/containers/{}", host, id), 3);

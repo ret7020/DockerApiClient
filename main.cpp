@@ -3,6 +3,7 @@
 #include <cstring>
 #include "docker.h"
 #include <fmt/core.h>
+#include <regex>
 
 using namespace std;
 
@@ -63,13 +64,71 @@ std::string exec(const char *cmd)
     return result;
 }
 
+std::ostream &writeString(std::ostream &out, std::string const &s)
+{
+    for (auto ch : s)
+    {
+        switch (ch)
+        {
+        case '\'':
+            out << "\\'";
+            break;
+
+        case '\"':
+            out << "\\\"";
+            break;
+
+        case '\?':
+            out << "\\?";
+            break;
+
+        case '\\':
+            out << "\\\\";
+            break;
+
+        case '\a':
+            out << "\\a";
+            break;
+
+        case '\b':
+            out << "\\b";
+            break;
+
+        case '\f':
+            out << "\\f";
+            break;
+
+        case '\n':
+            out << "\\n";
+            break;
+
+        case '\r':
+            out << "\\r";
+            break;
+
+        case '\t':
+            out << "\\t";
+            break;
+
+        case '\v':
+            out << "\\v";
+            break;
+
+        default:
+            out << ch;
+        }
+    }
+
+    return out;
+}
+
 // Ok, I loose, shit docker engine api
-string shtp_python_cli_run(string submission_id, string test="1 2")
+string shtp_python_cli_run(string submission_id, string test)
 {
     string workspace_absolute_path = "/home/stephan/Progs/DockerAPI/build/workspace";
     string mount_to = "/home/code";
     string container = "python:latest";
-    string entrypoint = "bash -c \"python3 /home/code/main.py <<< '1 2'\"";
+    string entrypoint = "bash -c \"python3 /home/code/main.py <<< '" + test + "'\"";
     string bash = fmt::v9::format("docker run --network none -itd -v {}/{}:{} {} {}", workspace_absolute_path, submission_id, mount_to, container, entrypoint);
     // Example command
     // docker run --network none -itd -v /home/stephan/Progs/DockerAPI/build/workspace/tmp:/home/code python:latest bash
@@ -77,23 +136,36 @@ string shtp_python_cli_run(string submission_id, string test="1 2")
     return container_id_messy.erase(container_id_messy.size() - 1);
 }
 
-
-json test_submission(json tests, json docker_map, string executor, string submission_id){
+json test_submission(json tests, json docker_map, string executor, string submission_id)
+{
     json checker_verdict = json::array();
-    for (json::iterator test = tests.begin(); test != tests.end(); ++test) {
-        cout << *test;
-        // string submission_container = shtp_python_cli_run(submission_id); // Run docker container with python3 process 
-        // // cout << submission_container << "\n"; // Print container id for debug
-        // int status_code = wait_for_container(submission_container)["StatusCode"]; // Wait until container finish
-        // if (!status_code){
-        //     //checker_verdict.push_back({{"status", true}, {"stderr", "aa"}});
-        //     cout << get_container_logs(submission_container); // Get stdout of container to compare with tests
-        // }else {} // Stderr handler here
-        remove_container(submission_container); // Delete container to prevent spam of containers
+    for (json::iterator test_it = tests.begin(); test_it != tests.end(); ++test_it)
+    {
+        json test = *test_it;
 
+        string submission_container = shtp_python_cli_run(submission_id, test["input"]); // Run docker container with python3 process
+        // cout << submission_container << "\n"; // Print container id for debug
+        int status_code = wait_for_container(submission_container)["StatusCode"]; // Wait until container finish
+        if (!status_code)
+        {
+            string output = get_container_logs(submission_container); // Get stdout of container to compare with tests
+            output = regex_replace(output,
+                                   regex("\\r\\n"),
+                                   "\n"); // Replace all \r\n to single \n
+            output = output.erase(output.size() - 1); // remove /n at the end of output
+            string excepted_output = test["output"];
+            // cout << excepted_output << " " << output << "\n";
+            writeString(cout, excepted_output);
+            cout << " ";
+            writeString(cout, output);
+            cout << "\n";
+            checker_verdict.push_back({{"status", output == excepted_output}, {"stderr", ""}});
+        }
+        else{}// Stderr handler here
+        remove_container(submission_container); // Delete container to prevent spam of containers
     }
     // Cleanup
-    //cleanup_workspace(submission_id); // Delete current submission folder from workspace
+    cleanup_workspace(submission_id); // Delete current submission folder from workspace
     return checker_verdict;
 }
 
@@ -105,14 +177,16 @@ int main()
     const json docker_map = {{"python", "python:latest"}, {"gcc", "gcc:latest"}};
     // Test data
     const string demo_submission = "666"; // Get it from backend
-    const json tests = {{{"input", "1 2"}, {"output", "3"}}, {{"input", "5 6"}, {"output", "11"}}};
-    test_submission(tests);
-    
+    const json tests = {{{"input", "1 2\n3 4"}, {"output", "3\n7"}}, {{"input", "5 6\n10 10"}, {"output", "11\n20"}}};
+    cout << tests << "\n";
+
     // ONLY FOR TEST WITHOUT BACKEND; WORKSPACE INITIALIZATION IS BACKEND DUTY
-    // cleanup_workspace(demo_submission); // To be sure, there is no such workspace folder
-    // init_workspace(demo_submission); // Create folder
-    // copy_demo_submission_source(demo_submission); // For test; gain source code into submission workspace
+    cleanup_workspace(demo_submission); // To be sure, there is no such workspace folder
+    init_workspace(demo_submission); // Create folder
+    copy_demo_submission_source(demo_submission); // For test; gain source code into submission workspace
     // ONLY FOR TEST WITHOUT BACKEND; WORKSPACE INITIALIZATION IS BACKEND DUTY
+
+    cout << test_submission(tests, docker_map, "python", demo_submission);
 
     // Pipeline finish
 
@@ -122,7 +196,7 @@ int main()
     // Example curl to docker api unix socket
     // curl -X GET --unix-socket /var/run/docker.sock http://localhost/images/json
     //
-   // Methods from lib
+    // Methods from lib
     // cout << list_containers(true);
 
     // stop_container("7acca23a34e", 10);
@@ -139,8 +213,8 @@ int main()
 
     // Our checker pipeline (refer to github.com/ItClassDev/Checker)
     // string container = "4c45d07e9038";
-    //string process_exit_sequence = "SHTP_PROCESS_EXIT_SEQUENCE";
-    
+    // string process_exit_sequence = "SHTP_PROCESS_EXIT_SEQUENCE";
+
     // websocket::stream<tcp::socket> ws = attach_to_container_ws(submission_container);                                 // Connect to websocket of started container
     // ws.write(net::buffer(fmt::v9::format("python3 /home/code/main.py < \n\r"))); // Run python source code execution
     // ws.write(net::buffer(string("1 2\r")));// Send test to stdin
@@ -158,7 +232,7 @@ int main()
     //             string buffer_processed = beast::buffers_to_string(buffer.data());
     //             result += buffer_processed;
     //             cout << result << "---" << "\n";
-            
+
     //             // //buffer_processed = buffer_processed.erase(buffer_processed.size() - 1);
     //             // //cout << buffer_processed; // print debug
     //             // // Finish execution trigger
@@ -169,8 +243,7 @@ int main()
     //                 //ws.close(websocket::close_code::normal);
     //             }
     //         }
-            
-            
+
     //         // if (count_substr(result.c_str(), process_exit_sequence.c_str()) >= 2){
     //         //     exit_sequences_found = 2;
     //         //     cout << "EXIT" << " " << exit_sequences_found << " ";
@@ -185,9 +258,9 @@ int main()
     // {
     //     cout << result;
     // }
-    
+
     // cout << "PROCESS FINISHED";
-    //kill_container(submission_container);
+    // kill_container(submission_container);
 
     return 0;
     // auto p = Popen({"docker", "attach", submission_container}, output{PIPE}, input{PIPE});

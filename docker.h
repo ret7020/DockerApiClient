@@ -23,7 +23,7 @@ using json = nlohmann::json;
 
 size_t writeFunction(void* ptr, size_t size, size_t nmemb, string* data);
 string raw_request(string endpoint, int method=0, string data="", string docker_socket="/var/run/docker.sock");
-json raw_api(string endpoint, int method=0, string data="", string docker_socket="/var/run/docker.sock");
+json raw_api(string endpoint, int method=0, string data="", bool plain=false, string docker_socket="/var/run/docker.sock");
 
 json list_containers(bool all=false, string host="http://localhost/v1.41");
 json inspect_container(string id, string host="http://localhost/v1.41");
@@ -36,7 +36,7 @@ json restart_container(string id, int t=0, string host="http://localhost/v1.41")
 json kill_container(string id, string signal="SIGKILL", string host="http://localhost/v1.41");
 json exec_in_container(string id, string bash_command, bool bash=true, bool AttachStdin=true, bool AttachStdout=true, bool AttachStderr=true, bool tty=false, string working_dir="/", string host="http://localhost/v1.41");
 
-json get_container_logs(string id, bool stream_stdout=true, bool stream_stderr=false, string host="http://localhost/v1.41"); // TODOO more parameters
+string get_container_logs(string id, bool stream_stdout=true, bool stream_stderr=false, string host="http://localhost/v1.41"); // TODOO more parameters
 json wait_for_container(string id, string host="http://localhost/v1.41");
 json remove_container(string id, string host="http://localhost/v1.41");
 
