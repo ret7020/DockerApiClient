@@ -12,6 +12,67 @@ namespace websocket = beast::websocket; // from <boost/beast/websocket.hpp>
 namespace net = boost::asio;            // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
+
+//For debug
+std::ostream& writeString(std::ostream& out, std::string const& s)
+{
+   for ( auto ch : s )
+   {
+      switch (ch)
+      {
+         case '\'':
+            out << "\\'";
+            break;
+
+         case '\"':
+            out << "\\\"";
+            break;
+
+         case '\?':
+            out << "\\?";
+            break;
+
+         case '\\':
+            out << "\\\\";
+            break;
+
+         case '\a':
+            out << "\\a";
+            break;
+
+         case '\b':
+            out << "\\b";
+            break;
+
+         case '\f':
+            out << "\\f";
+            break;
+
+         case '\n':
+            out << "\\n";
+            break;
+
+         case '\r':
+            out << "\\r";
+            break;
+
+         case '\t':
+            out << "\\t";
+            break;
+
+         case '\v':
+            out << "\\v";
+            break;
+
+         default:
+            out << ch;
+      }
+   }
+
+   return out;
+}
+
+
 // Sends a WebSocket message and prints the response
 int main(int argc, char** argv)
 {
@@ -54,32 +115,32 @@ int main(int argc, char** argv)
             }));
 
         // Perform the websocket handshake
-        ws.handshake(host, "/containers/1008652ac395/attach/ws?stream=1&stdout=1&stdin=1&logs=0");
+        ws.handshake(host, "/containers/2088223769d2/attach/ws?stream=1&stdout=1&stdin=0&logs=0");
 
         // Send the message
-        ws.write(net::buffer(std::string(text)));
-
-        // This buffer will hold the incoming message
-        while (true){
-        beast::flat_buffer buffer;
-
-        // Read a message into our buffer
-
-        ws.read(buffer);
-
-        // Close the WebSocket connection
-        // ws.close(websocket::close_code::normal);
-
-        // If we get here then the connection is closed gracefully
-
-        // The make_printable() function helps print a ConstBufferSequence
-        std::cout << beast::make_printable(buffer.data()) << std::endl;
+        for (int i = 0; i < 1; ++i){
+            ws.write(net::buffer(std::string("python3 /home/code/main.py <<< '1 2'; echo 'SHTP_EXECUTION_FINISH'\r")));
+            
+            int exit_sequences_find = 0;
+            while (exit_sequences_find <= 1){
+                beast::flat_buffer buffer;
+                ws.read(buffer);
+                std::string buffer_processed = beast::buffers_to_string(buffer.data());
+                //std::cout << buffer_processed << std::endl;
+                //writeString(std::cout, buffer_processed);
+                std::cout << buffer_processed;
+                std::cout << "\n";
+                if (buffer_processed.find("SHTP_EXECUTION_FINISH") == std::string::npos) exit_sequences_find++;
+            }
+            std::cout << "--TEST--";
+            ws.write(net::buffer(std::string("clear\n\r")));
         }
+        ws.close(websocket::close_code::normal); // Finish socket
     }
     catch(std::exception const& e)
     {
         std::cerr << "Error: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }
-    return EXIT_SUCCESS;
+    return 0;
 }

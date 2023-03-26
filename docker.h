@@ -42,7 +42,7 @@ json kill_container(string id, string signal="SIGKILL", string host="http://loca
 json exec_in_container(string id, string bash_command, bool bash=true, bool AttachStdin=true, bool AttachStdout=true, bool AttachStderr=true, bool tty=false, string working_dir="/", string host="http://localhost/v1.41");
 
 
-websocket::stream<tcp::socket> attach_to_container_ws(string id, bool stream=true, bool stdout=true, bool stdin=true, bool logs=false, string host="127.0.0.1", string port="2375");
+websocket::stream<tcp::socket> attach_to_container_ws(string id, bool stream=true, bool stdout=false, bool stdin=false, bool logs=false, string host="127.0.0.1", string port="2375");
 // TODO
 // Only functions declarations
 json create_tar(string);
