@@ -63,8 +63,9 @@ string raw_request(string endpoint, int method, string data, string docker_socke
             // cout << data << "\n";
             curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
         }
-        else if (method == 2) // PUT
-        {
+        else if (method == 2){} // PUT
+        else if (method == 3){ //DELETE
+            curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
         }
 
         curl_easy_perform(curl);
@@ -193,6 +194,17 @@ websocket::stream<tcp::socket> attach_to_container_ws(string id, bool stream, bo
     cout << "\n" << connection_uri << "\n";
     ws.handshake(host, connection_uri);
     return ws;
+}
+
+json get_container_logs(string id, bool stream_stdout, bool stream_stderr, string host){
+    return raw_api(fmt::v9::format("{}/containers/{}/logs?stdout={}&stderr={}", host, id, stream_stdout, stream_stderr));
+}
+json wait_for_container(string id, string host){
+    // Yeah, we will stack here
+    return raw_api(fmt::v9::format("{}/containers/{}/wait", host, id), 1, "");
+}
+json remove_container(string id, string host){
+    return raw_api(fmt::v9::format("{}/containers/{}", host, id), 3);
 }
 
 // json put_archive(string id, string host){

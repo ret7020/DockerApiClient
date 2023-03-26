@@ -64,12 +64,12 @@ std::string exec(const char *cmd)
 }
 
 // Ok, I loose, shit docker engine api
-string shtp_python_cli_run(string submission_id)
+string shtp_python_cli_run(string submission_id, string test="1 2")
 {
     string workspace_absolute_path = "/home/stephan/Progs/DockerAPI/build/workspace";
     string mount_to = "/home/code";
     string container = "python:latest";
-    string entrypoint = "bash";
+    string entrypoint = "bash -c \"python3 /home/code/main.py <<< '1 2'\"";
     string bash = fmt::v9::format("docker run --network none -itd -v {}/{}:{} {} {}", workspace_absolute_path, submission_id, mount_to, container, entrypoint);
     // Example command
     // docker run --network none -itd -v /home/stephan/Progs/DockerAPI/build/workspace/tmp:/home/code python:latest bash
@@ -82,6 +82,25 @@ string shtp_python_cli_run(string submission_id)
 
 int main()
 {
+    // Our Pipeline
+    string image = "python:latest";
+    const string demo_submission = "666"; // Get it from backend
+    
+    // ONLY FOR TEST WITHOUT BACKEND; WORKSPACE INITIALIZATION IS BACKEND DUTY
+    cleanup_workspace(demo_submission); // To be sure, there is no such workspace folder
+    init_workspace(demo_submission); // Create folder
+    copy_demo_submission_source(demo_submission); // For test; gain source code into submission workspace
+    // ONLY FOR TEST WITHOUT BACKEND; WORKSPACE INITIALIZATION IS BACKEND DUTY
+
+    string submission_container = shtp_python_cli_run(demo_submission); // Run docker container with python3 process 
+    cout << submission_container << "\n"; // Print container id for debug
+    int status_code = wait_for_container(submission_container)["StatusCode"]; // Wait until container finish
+    if (!status_code){
+        cout << get_container_logs(submission_container); // Get stdout of container to compare with tests
+    }else {} // Stderr handler here
+    cleanup_workspace(demo_submission); // Delete current submission folder from workspace
+    remove_container(submission_container); // Delete container to prevent spam of containers
+    // Pipeline finish
 
     // API test
     // cout << inspect_container(container)["State"];
@@ -106,16 +125,8 @@ int main()
 
     // Our checker pipeline (refer to github.com/ItClassDev/Checker)
     // string container = "4c45d07e9038";
-    string image = "python:latest";
-    string process_exit_sequence = "SHTP_PROCESS_EXIT_SEQUENCE";
-    const string demo_submission = "666";
-
-    //cleanup_workspace(demo_submission);
-    //init_workspace(demo_submission);
-    // For test; gain source code into submission workspace
-    //copy_demo_submission_source(demo_submission);
-    // Run docker container
-    string submission_container = shtp_python_cli_run(demo_submission);
+    //string process_exit_sequence = "SHTP_PROCESS_EXIT_SEQUENCE";
+    
     // websocket::stream<tcp::socket> ws = attach_to_container_ws(submission_container);                                 // Connect to websocket of started container
     // ws.write(net::buffer(fmt::v9::format("python3 /home/code/main.py < \n\r"))); // Run python source code execution
     // ws.write(net::buffer(string("1 2\r")));// Send test to stdin
@@ -162,10 +173,8 @@ int main()
     // }
     
     // cout << "PROCESS FINISHED";
-    kill_container(submission_container);
-    // cleanup_workspace(demo_submission);
+    //kill_container(submission_container);
 
-    // Pipeline finish
     return 0;
     // auto p = Popen({"docker", "attach", submission_container}, output{PIPE}, input{PIPE});
     // auto msg = "python3 /home/code/main.py\r";
