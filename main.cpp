@@ -3,9 +3,8 @@
 #include <cstring>
 #include "docker.h"
 #include <fmt/core.h>
-#include "subprocess.hpp"
 
-using namespace subprocess;
+
 using namespace std;
 
 // Single task checking pipeline (beta)
@@ -66,15 +65,28 @@ string shtp_python_cli_run(string submission_id){
     string bash = fmt::v9::format("docker run --network none -itd -v {}/{}:{} {} {}", workspace_absolute_path, submission_id, mount_to, container, entrypoint);
     // Example command
     //docker run --network none -itd -v /home/stephan/Progs/DockerAPI/build/workspace/tmp:/home/code python:latest bash
-    return exec(bash.c_str());   
+    string container_id_messy = exec(bash.c_str());
+    return container_id_messy.erase(container_id_messy.size() - 1);
 }
+
+int count_substr(const char *str, const char *sub) {
+    const char *ret = str;   
+    int count = 0;
+
+    if (ret && sub && *sub != '\0') {
+        while ((ret = strstr(ret, sub)) != NULL) {
+            ret += strlen(sub);
+            count++;
+        }
+    }
+    return count;
+}
+
 
 // string shtp_python_exec(string)
 
 int main()
 {
-    string container = "4c45d07e9038";
-    string image = "python:latest";
 
     // API test
     // cout << inspect_container(container)["State"];
@@ -98,24 +110,45 @@ int main()
     // API DockerApiClient("http://localhost/v1.41", "/var/run/docker.sock");
 
     // Our checker pipeline (refer to github.com/ItClassDev/Checker)
+    string container = "4c45d07e9038";
+    string image = "python:latest";
+    string process_exit_sequence = "SHTP_PROCESS_EXIT_SEQUENCE";
     const string demo_submission = "666";
 
     cleanup_workspace(demo_submission);
     init_workspace(demo_submission);
     // For test; gain source code into submission workspace
-    //copy_demo_submission_source(demo_submission);
+    copy_demo_submission_source(demo_submission);
     // Run docker container
-    //string submission_container = shtp_python_cli_run(demo_submission);
-    string submission_container = "29ecd4fb47c21688ef5fa96ab2e825602d3a7c5b32e09b7961752a82389fa8c7";
-    auto p = Popen({"docker", "attach", submission_container}, output{PIPE}, input{PIPE});
-    auto msg = "python3 /home/code/main.py\r";
-    p.send(msg, strlen(msg));
-    auto res = p.communicate();
-    std::cout << res.first.buf.data() << std::endl;
-    
-    // kill_container(submission_container);
-    // cleanup_workspace(demo_submission);
+    string submission_container = shtp_python_cli_run(demo_submission);
+    websocket::stream<tcp::socket> ws = attach_to_container_ws(submission_container); // Connect to websocket of started container
+    ws.write(net::buffer(fmt::v9::format("python3 /home/code/main.py; echo '{}'\r", process_exit_sequence))); // Run python source code execution
+    ws.write(net::buffer(string("1 2\r"))); // Send test to stdin
+    int exit_sequences_found = 0;
+    while (true){ // TODO
+        beast::flat_buffer buffer; // buffer
+        ws.read(buffer); // read data from socket to buffer
+        string buffer_processed = beast::buffers_to_string(buffer.data());
+        //buffer_processed = buffer_processed.erase(buffer_processed.size() - 1);
+        cout << buffer_processed; // print debug
+        // Finish execution trigger
+        cout << "CONTAIN" << (count_substr(buffer_processed.c_str(), process_exit_sequence.c_str()) > 0) << "CONTAIN";
+        // if (count_substr(buffer_processed.c_str(), process_exit_sequence.c_str()) > 0){
+        //     exit_sequences_found++;
+        //     if (exit_sequences_found >= 2) break;
+        // }
+        //if (strstr(buffer_processed.c_str(), process_exit_sequence.c_str())) break;
+        //if (buffer_processed.find(process_exit_sequence) != string::npos) break; // Execution finished
+    }
+    kill_container(submission_container);
+    cleanup_workspace(demo_submission);
 
     // Pipeline finish
     return 0;
+    // auto p = Popen({"docker", "attach", submission_container}, output{PIPE}, input{PIPE});
+    // auto msg = "python3 /home/code/main.py\r";
+    // p.send(msg, strlen(msg));
+    // auto res = p.communicate();
+    // std::cout << res.first.buf.data() << std::endl;
+    
 }

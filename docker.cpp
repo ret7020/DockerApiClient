@@ -1,13 +1,4 @@
-#include <curl/curl.h>
-#include <iostream>
-#include <fmt/core.h>
-#include <cstring>
-#include "json.hpp"
 #include "docker.h"
-
-
-using namespace std;
-using json = nlohmann::json;
 
 size_t writeFunction(void *ptr, size_t size, size_t nmemb, string *data)
 {
@@ -71,9 +62,9 @@ string raw_request(string endpoint, int method, string data, string docker_socke
             curl_easy_setopt(curl, CURLOPT_HTTPHEADER, hs);
             // cout << data << "\n";
             curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
-        }else if (method == 2) // PUT
+        }
+        else if (method == 2) // PUT
         {
-            
         }
 
         curl_easy_perform(curl);
@@ -89,7 +80,7 @@ string raw_request(string endpoint, int method, string data, string docker_socke
 json raw_api(string endpoint, int method, string data, string docker_socket)
 {
     string plain_text = raw_request(endpoint, method, data);
-    //cout << "\n" << plain_text << "\n";
+    // cout << "\n" << plain_text << "\n";
     json no_data = {
         {"data", false}};
 
@@ -108,7 +99,8 @@ json inspect_container(string id, string host)
 {
     return raw_api(fmt::v9::format("{}/containers/{}/json", host, id));
 }
-json processes_in_container(string id, string ps_args, string host){
+json processes_in_container(string id, string ps_args, string host)
+{
     return raw_api(fmt::v9::format("{}/containers/{}/top?ps_args={}", host, id, ps_args));
 }
 
@@ -136,18 +128,19 @@ json exec_in_container(string id, string bash_command, bool bash, bool AttachStd
 {
     // Creating exec instance
     string endpoint = fmt::v9::format("{}/containers/{}/exec", host, id);
-    
+
     json payload = {
         {"AttachStdin", AttachStdin},
         {"AttachStdout", AttachStdout},
         {"AttachStderr", AttachStderr},
         {"Tty", tty},
-        {"WorkingDir", working_dir}
-    };
+        {"WorkingDir", working_dir}};
     // To execute bash command in docker, you need to use smth, like bash -c COMMAND HERE
     // To execute binary in docker, you need to use smth, like /path/to/bin
-    if (bash) payload["Cmd"] = {"bash", "-c", bash_command};
-    else payload["Cmd"] = {bash_command};
+    if (bash)
+        payload["Cmd"] = {"bash", "-c", bash_command};
+    else
+        payload["Cmd"] = {bash_command};
     string payload_string = payload.dump();
     cout << payload_string << "\n";
     json res = raw_api(endpoint, 1, payload_string);
@@ -159,7 +152,8 @@ json exec_in_container(string id, string bash_command, bool bash, bool AttachStd
     return raw_api(fmt::v9::format("{}/exec/{}/start", host, res["Id"]), 1, payload_string);
 }
 
-json create_container(string image, int StopTimeout, json volumes, int MemoryLimit, string bash_init_cmd, string WorkingDir, bool AttachStdin, bool AttachStdout, bool AttachStderr, bool NetworkDisabled, string host){
+json create_container(string image, int StopTimeout, json volumes, int MemoryLimit, string bash_init_cmd, string WorkingDir, bool AttachStdin, bool AttachStdout, bool AttachStderr, bool NetworkDisabled, string host)
+{
     json payload = {
         {"Image", image},
         // {"Entrypoint", {"/bin/bash", },
@@ -175,10 +169,31 @@ json create_container(string image, int StopTimeout, json volumes, int MemoryLim
         // {"AttachStderr", AttachStderr}
     };
     string payload_string = payload.dump();
-    cout << "\n" << payload_string << "\n";
+    cout << "\n"
+         << payload_string << "\n";
     return raw_api(fmt::v9::format("{}/containers/create", host), 1, payload_string);
 }
-
+websocket::stream<tcp::socket> attach_to_container_ws(string id, bool stream, bool stdout, bool stdin, bool logs, string host, string port)
+{
+    // Create websocket
+    net::io_context ioc;
+    tcp::resolver resolver{ioc};
+    websocket::stream<tcp::socket> ws{ioc};
+    auto const results = resolver.resolve(host, port);
+    net::connect(ws.next_layer(), results.begin(), results.end());
+    // Decorator for user agent
+    // ws.set_option(websocket::stream_base::decorator(
+    //     [](websocket::request_type &req)
+    //     {
+    //         req.set(http::field::user_agent,
+    //                 std::string(BOOST_BEAST_VERSION_STRING) +
+    //                     " shtp-docker-client");
+    //     }));
+    string connection_uri = fmt::v9::format("/containers/{}/attach/ws?stream={}&stdout={}&stdin={}&logs={}", id, stream, stdout, stdin, logs);
+    cout << "\n" << connection_uri << "\n";
+    ws.handshake(host, connection_uri);
+    return ws;
+}
 
 // json put_archive(string id, string host){
 // }
