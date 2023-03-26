@@ -5,6 +5,8 @@
 #include <fmt/core.h>
 #include <regex>
 
+#include <chrono>
+
 using namespace std;
 
 // Single task checking pipeline (beta)
@@ -155,17 +157,17 @@ json test_submission(json tests, json docker_map, string executor, string submis
             output = output.erase(output.size() - 1); // remove /n at the end of output
             string excepted_output = test["output"];
             // cout << excepted_output << " " << output << "\n";
-            writeString(cout, excepted_output);
-            cout << " ";
-            writeString(cout, output);
-            cout << "\n";
+            //writeString(cout, excepted_output);
+            //cout << " ";
+            //writeString(cout, output);
+            //cout << "\n";
             checker_verdict.push_back({{"status", output == excepted_output}, {"stderr", ""}});
         }
         else{}// Stderr handler here
         remove_container(submission_container); // Delete container to prevent spam of containers
     }
     // Cleanup
-    cleanup_workspace(submission_id); // Delete current submission folder from workspace
+    //cleanup_workspace(submission_id); // Delete current submission folder from workspace
     return checker_verdict;
 }
 
@@ -177,7 +179,7 @@ int main()
     const json docker_map = {{"python", "python:latest"}, {"gcc", "gcc:latest"}};
     // Test data
     const string demo_submission = "666"; // Get it from backend
-    const json tests = {{{"input", "1 2\n3 4"}, {"output", "3\n7"}}, {{"input", "5 6\n10 10"}, {"output", "11\n20"}}};
+    const json tests = {{{"input", "1 2\n3 4"}, {"output", "3\n7"}}, {{"input", "5 6\n10 10"}, {"output", "11\n20"}}, {{"input", "20 15\n12 12"}, {"output", "35\n24"}}, {{"input", "1 1\n5 5"}, {"output", "2\n10"}}};
     cout << tests << "\n";
 
     // ONLY FOR TEST WITHOUT BACKEND; WORKSPACE INITIALIZATION IS BACKEND DUTY
@@ -186,8 +188,10 @@ int main()
     copy_demo_submission_source(demo_submission); // For test; gain source code into submission workspace
     // ONLY FOR TEST WITHOUT BACKEND; WORKSPACE INITIALIZATION IS BACKEND DUTY
 
-    cout << test_submission(tests, docker_map, "python", demo_submission);
-
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    test_submission(tests, docker_map, "python", demo_submission);
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    std::cout << "Time spent = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() / 1000 << "[s]" << std::endl;
     // Pipeline finish
 
     // API test
