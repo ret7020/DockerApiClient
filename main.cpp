@@ -78,28 +78,42 @@ string shtp_python_cli_run(string submission_id, string test="1 2")
 }
 
 
+json test_submission(json tests, json docker_map, string executor, string submission_id){
+    json checker_verdict = json::array();
+    for (json::iterator test = tests.begin(); test != tests.end(); ++test) {
+        cout << *test;
+        // string submission_container = shtp_python_cli_run(submission_id); // Run docker container with python3 process 
+        // // cout << submission_container << "\n"; // Print container id for debug
+        // int status_code = wait_for_container(submission_container)["StatusCode"]; // Wait until container finish
+        // if (!status_code){
+        //     //checker_verdict.push_back({{"status", true}, {"stderr", "aa"}});
+        //     cout << get_container_logs(submission_container); // Get stdout of container to compare with tests
+        // }else {} // Stderr handler here
+        remove_container(submission_container); // Delete container to prevent spam of containers
+
+    }
+    // Cleanup
+    //cleanup_workspace(submission_id); // Delete current submission folder from workspace
+    return checker_verdict;
+}
+
 // string shtp_python_exec(string)
 
 int main()
 {
     // Our Pipeline
-    string image = "python:latest";
+    const json docker_map = {{"python", "python:latest"}, {"gcc", "gcc:latest"}};
+    // Test data
     const string demo_submission = "666"; // Get it from backend
+    const json tests = {{{"input", "1 2"}, {"output", "3"}}, {{"input", "5 6"}, {"output", "11"}}};
+    test_submission(tests);
     
     // ONLY FOR TEST WITHOUT BACKEND; WORKSPACE INITIALIZATION IS BACKEND DUTY
-    cleanup_workspace(demo_submission); // To be sure, there is no such workspace folder
-    init_workspace(demo_submission); // Create folder
-    copy_demo_submission_source(demo_submission); // For test; gain source code into submission workspace
+    // cleanup_workspace(demo_submission); // To be sure, there is no such workspace folder
+    // init_workspace(demo_submission); // Create folder
+    // copy_demo_submission_source(demo_submission); // For test; gain source code into submission workspace
     // ONLY FOR TEST WITHOUT BACKEND; WORKSPACE INITIALIZATION IS BACKEND DUTY
 
-    string submission_container = shtp_python_cli_run(demo_submission); // Run docker container with python3 process 
-    cout << submission_container << "\n"; // Print container id for debug
-    int status_code = wait_for_container(submission_container)["StatusCode"]; // Wait until container finish
-    if (!status_code){
-        cout << get_container_logs(submission_container); // Get stdout of container to compare with tests
-    }else {} // Stderr handler here
-    cleanup_workspace(demo_submission); // Delete current submission folder from workspace
-    remove_container(submission_container); // Delete container to prevent spam of containers
     // Pipeline finish
 
     // API test

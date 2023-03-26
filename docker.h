@@ -21,11 +21,6 @@ using tcp = boost::asio::ip::tcp;
 using namespace std;
 using json = nlohmann::json;
 
-
-
-using namespace std;
-using json = nlohmann::json;
-
 size_t writeFunction(void* ptr, size_t size, size_t nmemb, string* data);
 string raw_request(string endpoint, int method=0, string data="", string docker_socket="/var/run/docker.sock");
 json raw_api(string endpoint, int method=0, string data="", string docker_socket="/var/run/docker.sock");

@@ -17,10 +17,10 @@ make
 
 ## API methods implementation status
 - [x] List containers
-- [ ] Create container
+- [x] (part)Create container
 - [x] Inspect container
 - [x] List processes inside container
-- [ ] Container logs
+- [x] (part)Container logs
 - [ ] Container FS changes
 - [ ] Export container
 - [ ] Container status (resources usage)
@@ -31,8 +31,9 @@ make
 - [x] Kill container
 - [ ] Update container
 - [ ] Rename container
+- [x] (part) Remove container
 - [ ] Pause container
 - [ ] Unpause container
 - [ ] Attach to container
 - [x] Exec bash in container
-- [ ] Wait for a container
+- [x] (part) Wait for a container
