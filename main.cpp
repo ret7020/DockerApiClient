@@ -4,7 +4,6 @@
 #include "docker.h"
 #include <fmt/core.h>
 #include <regex>
-
 #include <chrono>
 
 using namespace std;
@@ -146,7 +145,7 @@ json test_submission(json tests, json docker_map, string executor, string submis
         json test = *test_it;
 
         string submission_container = shtp_python_cli_run(submission_id, test["input"]); // Run docker container with python3 process
-        // cout << submission_container << "\n"; // Print container id for debug
+        // cout << submission_contaiwait_for_containerner << "\n"; // Print container id for debug
         int status_code = wait_for_container(submission_container)["StatusCode"]; // Wait until container finish
         if (!status_code)
         {
